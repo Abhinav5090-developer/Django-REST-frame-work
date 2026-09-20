@@ -1,0 +1,703 @@
+# 🚀 4. Understand API Views
+
+> **API Views** are responsible for receiving HTTP requests, processing the request, interacting with serializers/models, and returning HTTP responses.
+
+In Django REST Framework (DRF), there are several ways to create API views:
+
+```text
+Function-Based Views
+        ↓
+Class-Based Views
+        ↓
+Generic Views
+        ↓
+ViewSets
+```
+
+Each approach provides a different level of abstraction and code reusability.
+
+---
+
+# 📌 API View — Basic Flow
+
+```text
+Client
+  │
+  │ HTTP Request
+  ▼
+┌──────────────┐
+│   API View   │
+└──────┬───────┘
+       │
+       ├── Serializer
+       │
+       ├── Validation
+       │
+       ├── Business Logic
+       │
+       └── Model / Database
+              │
+              ▼
+         HTTP Response
+              │
+              ▼
+           Client
+```
+
+---
+
+# 🟢 a. Function-Based Views (FBV)
+
+A **Function-Based View** is an API view written as a normal Python function.
+
+DRF provides the `@api_view` decorator to create function-based API views.
+
+### 🔥 Example
+
+```python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(['GET'])
+def product_list(request):
+    return Response({
+        "message": "Product list"
+    })
+```
+
+The function handles the HTTP request and returns a response.
+
+### 🌐 URL
+
+```python
+from django.urls import path
+from .views import product_list
+
+urlpatterns = [
+    path('products/', product_list),
+]
+```
+
+Request:
+
+```http
+GET /products/
+```
+
+Response:
+
+```json
+{
+    "message": "Product list"
+}
+```
+
+---
+
+## 🔄 FBV Flow
+
+```text
+GET Request
+     ↓
+@api_view
+     ↓
+product_list()
+     ↓
+Response()
+     ↓
+Client
+```
+
+---
+
+## 📦 FBV with GET and POST
+
+A single function can handle multiple HTTP methods.
+
+```python
+@api_view(['GET', 'POST'])
+def product_list(request):
+
+    if request.method == 'GET':
+        return Response({
+            "message": "Get products"
+        })
+
+    elif request.method == 'POST':
+        return Response({
+            "message": "Create product"
+        })
+```
+
+### 🧠 Key Point
+
+FBVs are:
+
+- Simple
+- Easy to understand
+- Good for small APIs
+- Explicit about request handling
+
+---
+
+# 🔵 b. Class-Based Views (CBV)
+
+A **Class-Based View** uses a Python class instead of a function.
+
+DRF provides `APIView` for creating class-based API views.
+
+### 🔥 Example
+
+```python
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
+class ProductAPIView(APIView):
+
+    def get(self, request):
+        return Response({
+            "message": "Get products"
+        })
+
+    def post(self, request):
+        return Response({
+            "message": "Create product"
+        })
+```
+
+### URL
+
+```python
+from django.urls import path
+from .views import ProductAPIView
+
+urlpatterns = [
+    path(
+        'products/',
+        ProductAPIView.as_view()
+    ),
+]
+```
+
+---
+
+## 🔄 CBV Flow
+
+```text
+GET Request
+     ↓
+ProductAPIView
+     ↓
+get()
+     ↓
+Response
+```
+
+For POST:
+
+```text
+POST Request
+     ↓
+ProductAPIView
+     ↓
+post()
+     ↓
+Response
+```
+
+The HTTP method determines which class method is called.
+
+| HTTP Method | CBV Method |
+|---|---|
+| `GET` | `get()` |
+| `POST` | `post()` |
+| `PUT` | `put()` |
+| `PATCH` | `patch()` |
+| `DELETE` | `delete()` |
+
+---
+
+# 🟡 c. Generic Views
+
+**Generic Views** are pre-built DRF views designed for common API operations.
+
+They reduce repetitive code.
+
+Instead of manually writing:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+you can use DRF's generic classes.
+
+### Common Generic Views
+
+```text
+ListAPIView
+CreateAPIView
+RetrieveAPIView
+UpdateAPIView
+DestroyAPIView
+ListCreateAPIView
+RetrieveUpdateDestroyAPIView
+```
+
+---
+
+## 🔥 Example — List and Create
+
+```python
+from rest_framework.generics import ListCreateAPIView
+from .models import Product
+from .serializers import ProductSerializer
+
+
+class ProductListCreateView(ListCreateAPIView):
+
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+This single class provides:
+
+```text
+GET  /products/
+POST /products/
+```
+
+---
+
+## 🔥 Retrieve, Update and Delete
+
+```python
+from rest_framework.generics import (
+    RetrieveUpdateDestroyAPIView
+)
+
+
+class ProductDetailView(
+    RetrieveUpdateDestroyAPIView
+):
+
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+This provides:
+
+```text
+GET     /products/1/
+PUT     /products/1/
+PATCH   /products/1/
+DELETE  /products/1/
+```
+
+---
+
+## 🧠 Generic View Flow
+
+```text
+Generic View
+     │
+     ├── QuerySet
+     │
+     ├── Serializer
+     │
+     └── Built-in CRUD behavior
+```
+
+You mainly configure:
+
+```python
+queryset = Product.objects.all()
+serializer_class = ProductSerializer
+```
+
+---
+
+# 🟣 d. ViewSets
+
+A **ViewSet** groups related API operations into a single class.
+
+Instead of creating separate views for:
+
+```text
+List
+Create
+Retrieve
+Update
+Delete
+```
+
+you can use a `ViewSet`.
+
+### 🔥 Example
+
+```python
+from rest_framework.viewsets import ModelViewSet
+from .models import Product
+from .serializers import ProductSerializer
+
+
+class ProductViewSet(ModelViewSet):
+
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+`ModelViewSet` provides standard CRUD operations.
+
+```text
+GET       /products/
+POST      /products/
+GET       /products/1/
+PUT       /products/1/
+PATCH     /products/1/
+DELETE    /products/1/
+```
+
+---
+
+# 🛣️ ViewSets + Routers
+
+ViewSets are commonly used together with **routers**.
+
+### `urls.py`
+
+```python
+from rest_framework.routers import DefaultRouter
+from .views import ProductViewSet
+
+
+router = DefaultRouter()
+
+router.register(
+    'products',
+    ProductViewSet
+)
+
+urlpatterns = router.urls
+```
+
+The router automatically creates URL patterns for the ViewSet.
+
+### 🔄 Flow
+
+```text
+Client
+  ↓
+Router
+  ↓
+ViewSet
+  ↓
+Serializer
+  ↓
+Model
+  ↓
+Database
+  ↓
+Response
+```
+
+---
+
+# 📊 ViewSet Actions
+
+A `ModelViewSet` provides common actions:
+
+| Action | HTTP Method | Purpose |
+|---|---|---|
+| `list()` | GET | Get all objects |
+| `create()` | POST | Create object |
+| `retrieve()` | GET | Get one object |
+| `update()` | PUT | Full update |
+| `partial_update()` | PATCH | Partial update |
+| `destroy()` | DELETE | Delete object |
+
+---
+
+# ⚖️ e. Choosing the Right Approach
+
+Different API requirements call for different approaches.
+
+## 🟢 Function-Based Views
+
+Use when:
+
+```text
+Small API
+Simple logic
+Few endpoints
+Explicit control
+```
+
+Example:
+
+```python
+@api_view(['GET'])
+def product_list(request):
+    ...
+```
+
+---
+
+## 🔵 Class-Based Views
+
+Use when:
+
+```text
+Multiple HTTP methods
+More structured logic
+Need reusable class behavior
+```
+
+Example:
+
+```python
+class ProductAPIView(APIView):
+    ...
+```
+
+---
+
+## 🟡 Generic Views
+
+Use when:
+
+```text
+Standard CRUD operations
+Common API behavior
+Want less repetitive code
+```
+
+Example:
+
+```python
+class ProductListCreateView(
+    ListCreateAPIView
+):
+    ...
+```
+
+---
+
+## 🟣 ViewSets
+
+Use when:
+
+```text
+Full CRUD APIs
+Resource-based APIs
+Multiple standard operations
+Router-based URL configuration
+```
+
+Example:
+
+```python
+class ProductViewSet(ModelViewSet):
+    ...
+```
+
+---
+
+# 📊 Comparison
+
+| Feature | FBV | APIView | Generic Views | ViewSets |
+|---|---|---|---|---|
+| Style | Function | Class | Class | Class |
+| Easy to start | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
+| Code reuse | Low | Medium | High | Very High |
+| CRUD support | Manual | Manual | Built-in | Built-in |
+| HTTP methods | Explicit | Methods | Built-in | Actions |
+| Routers | ❌ | ❌ | ❌ | ✅ |
+| Best for | Simple APIs | Custom logic | Standard CRUD | Full resource APIs |
+
+---
+
+# 🔥 Same Product API in Different Approaches
+
+## 1️⃣ Function-Based View
+
+```python
+@api_view(['GET'])
+def products(request):
+    ...
+```
+
+### Structure
+
+```text
+Function
+   ↓
+Manual Logic
+   ↓
+Response
+```
+
+---
+
+## 2️⃣ APIView
+
+```python
+class ProductAPIView(APIView):
+    def get(self, request):
+        ...
+
+    def post(self, request):
+        ...
+```
+
+### Structure
+
+```text
+Class
+ ↓
+HTTP Methods
+ ↓
+Logic
+```
+
+---
+
+## 3️⃣ Generic View
+
+```python
+class ProductListCreateView(
+    ListCreateAPIView
+):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+### Structure
+
+```text
+Generic Class
+      ↓
+Built-in CRUD behavior
+```
+
+---
+
+## 4️⃣ ViewSet
+
+```python
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+### Structure
+
+```text
+ViewSet
+   ↓
+Router
+   ↓
+CRUD Endpoints
+```
+
+---
+
+# 🧠 API Views Architecture
+
+```text
+                       API VIEWS
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ▼                ▼                ▼
+         FBV             CBV             ViewSet
+          │                │                │
+          │          ┌─────┴─────┐          │
+          │          │           │          │
+          │       APIView    Generic       │
+          │                    Views        │
+          │                                 │
+          └─────────────────────────────────┘
+                           │
+                           ▼
+                      API Response
+```
+
+---
+
+# 🎯 Quick Revision
+
+```text
+API VIEWS
+│
+├── Function-Based Views
+│     └── @api_view
+│
+├── Class-Based Views
+│     └── APIView
+│
+├── Generic Views
+│     ├── ListAPIView
+│     ├── CreateAPIView
+│     ├── RetrieveAPIView
+│     ├── UpdateAPIView
+│     ├── DestroyAPIView
+│     ├── ListCreateAPIView
+│     └── RetrieveUpdateDestroyAPIView
+│
+└── ViewSets
+      ├── ViewSet
+      ├── ModelViewSet
+      └── Routers
+```
+
+---
+
+# 💡 Easy Memory Trick
+
+```text
+FBV
+ ↓
+Simple & Explicit
+
+APIView
+ ↓
+Class + Custom Logic
+
+Generic Views
+ ↓
+Less Code + Standard CRUD
+
+ViewSet
+ ↓
+CRUD + Router + Resource-Based API
+```
+
+---
+
+# 🚀 Recommended Learning Order
+
+```text
+Function-Based Views
+        ↓
+APIView
+        ↓
+Generic Views
+        ↓
+ViewSets
+        ↓
+Routers
+        ↓
+CRUD API
+        ↓
+Authentication
+        ↓
+Permissions
+```
+
+> **Key idea:** Start with `APIView` to understand how DRF handles HTTP methods, then learn **Generic Views** and **ViewSets** to reduce repetitive CRUD code.
