@@ -1,0 +1,335 @@
+# 🚀 Django REST Framework (DRF) Fundamentals
+
+> **Django REST Framework (DRF)** is a powerful toolkit for building **Web APIs using Django and Python**.
+
+It provides tools for **serializers, API views, authentication, permissions, validation, pagination, and more**.
+
+---
+
+# 📌 1. What is Django REST Framework?
+
+**Django REST Framework (DRF)** is a third-party framework built on top of Django for creating **RESTful APIs**.
+
+Django is mainly used for building web applications, while DRF provides additional functionality for building APIs.
+
+### 🔥 Django vs DRF
+
+```text
+Django
+   ↓
+Web Applications
+HTML
+Templates
+Forms
+Views
+Database
+
+Django REST Framework
+   ↓
+Web APIs
+JSON
+Serializers
+API Views
+Authentication
+Permissions
+```
+
+### 🌐 Example
+
+A Django website might return an HTML page:
+
+```text
+Browser
+   ↓
+Django
+   ↓
+HTML Page
+```
+
+A DRF API usually returns data such as JSON:
+
+```text
+React / Mobile App
+       ↓
+      DRF
+       ↓
+      JSON
+```
+
+Example JSON response:
+
+```json
+{
+    "id": 1,
+    "name": "Laptop",
+    "price": 75000
+}
+```
+
+---
+
+# 🧱 2. DRF Architecture
+
+DRF follows a layered architecture where different components handle different responsibilities.
+
+### 🔄 Basic DRF Architecture
+
+```text
+┌──────────────────────┐
+│       CLIENT         │
+│ React / Mobile / Web │
+└──────────┬───────────┘
+           │
+           │ HTTP Request
+           ▼
+┌──────────────────────┐
+│      URL / ROUTER    │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│    API VIEW /        │
+│    VIEWSET           │
+└──────────┬───────────┘
+           │
+           ├──────────────► Serializer
+           │                    │
+           │                    ▼
+           │                Validation
+           │
+           ▼
+┌──────────────────────┐
+│        MODEL         │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│       DATABASE       │
+└──────────────────────┘
+```
+
+The processed data then travels back:
+
+```text
+Database
+   ↓
+Model
+   ↓
+Serializer
+   ↓
+API View
+   ↓
+HTTP Response
+   ↓
+Client
+```
+
+---
+
+# 🧩 Important DRF Components
+
+## 1️⃣ URL / Router
+
+Determines **which API endpoint** should handle the request.
+
+Example:
+
+```text
+/api/products/
+/api/products/1/
+```
+
+---
+
+## 2️⃣ Views
+
+Views contain the logic for handling API requests.
+
+Example:
+
+```python
+from rest_framework.views import APIView
+```
+
+Views can handle operations such as:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+---
+
+## 3️⃣ Serializers
+
+Serializers convert complex Django objects into data formats such as JSON.
+
+They also help validate incoming data.
+
+```text
+Django Model
+     ↓
+Serializer
+     ↓
+JSON
+```
+
+And incoming data can travel in the opposite direction:
+
+```text
+JSON
+ ↓
+Serializer
+ ↓
+Validated Data
+ ↓
+Django Model
+```
+
+---
+
+## 4️⃣ Models
+
+Models define the structure of application data and represent database tables.
+
+Example:
+
+```python
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.IntegerField()
+```
+
+---
+
+## 5️⃣ Database
+
+The database stores the actual application data.
+
+Examples:
+
+```text
+SQLite
+PostgreSQL
+MySQL
+```
+
+---
+
+## 6️⃣ Authentication
+
+Authentication determines:
+
+> **Who is the user?**
+
+Examples:
+
+```text
+Session Authentication
+Token Authentication
+JWT Authentication
+```
+
+---
+
+## 7️⃣ Permissions
+
+Permissions determine:
+
+> **What is the user allowed to do?**
+
+Example:
+
+```text
+User
+   ↓
+Authenticated?
+   ↓
+Permission Check
+   ↓
+Allow / Deny
+```
+
+---
+
+# 🔄 3. API Development Workflow
+
+A typical DRF API development process looks like this:
+
+```text
+Requirement
+    ↓
+Create Django Project
+    ↓
+Create Django App
+    ↓
+Create Model
+    ↓
+Run Migrations
+    ↓
+Create Serializer
+    ↓
+Create API View / ViewSet
+    ↓
+Configure URLs / Routers
+    ↓
+Test API
+    ↓
+Add Authentication & Permissions
+    ↓
+Deploy API
+```
+
+---
+
+## 📝 Step-by-Step Workflow
+
+### Step 1 — Create Django Project
+
+```bash
+django-admin startproject myproject
+```
+
+---
+
+### Step 2 — Create an App
+
+```bash
+python manage.py startapp products
+```
+
+---
+
+### Step 3 — Create a Model
+
+```python
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.IntegerField()
+```
+
+---
+
+### Step 4 — Create Migrations
+
+```bash
+python manage.py makemigrations
+```
+
+Then:
+
+```bash
+python manage.py migrate
+```
+
+---
+
+### Step 5 — Create Serializer
+
+```python
+from rest_framework import serializers
+
+class ProductSerializer(serializers.ModelSerializer
