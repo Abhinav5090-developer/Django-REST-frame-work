@@ -1,0 +1,691 @@
+# 🚀 API Fundamentals
+
+> **API = Application Programming Interface**
+>
+> APIs allow different software applications to **communicate with each other and exchange data**.
+
+---
+
+## 📌 1. What is an API?
+
+An **API (Application Programming Interface)** is a set of rules and endpoints that allows one application to communicate with another application or service.
+
+For example:
+
+```text
+Frontend  ───────►  API  ───────►  Backend
+                      │
+                      ▼
+                   Database
+```
+
+A frontend application can send a request to an API, and the backend processes the request and sends a response.
+
+### 🌐 Real-World Example
+
+When you use a food delivery application:
+
+```text
+Mobile App
+    ↓
+API Request
+    ↓
+Backend Server
+    ↓
+Database
+    ↓
+API Response
+    ↓
+Mobile App
+```
+
+The API acts as a **communication layer** between the client and server.
+
+### 🔑 Why are APIs used?
+
+- 🔄 Exchange data between applications
+- 🔌 Connect frontend and backend
+- 📱 Support mobile and web applications
+- 🔐 Provide controlled access to backend resources
+- ♻️ Reuse backend functionality
+- 🌍 Communicate with external services
+
+---
+
+# 🖥️ 2. Client-Server Communication
+
+**Client-server communication** is the process where a client sends a request to a server, and the server processes the request and returns a response.
+
+### 👤 Client
+
+The **client** is the application that requests data or services.
+
+Examples:
+
+- 🌐 Web browser
+- 📱 Mobile application
+- 💻 Desktop application
+- ⚛️ React frontend
+
+### 🖥️ Server
+
+The **server** receives requests, processes business logic, communicates with the database, and sends responses.
+
+Examples:
+
+- Django
+- Django REST Framework
+- Node.js
+- Spring Boot
+
+### 🔄 Communication Flow
+
+```text
+┌──────────────┐
+│    CLIENT    │
+│ React / App  │
+└──────┬───────┘
+       │
+       │ HTTP Request
+       ▼
+┌──────────────┐
+│   API /      │
+│    SERVER    │
+└──────┬───────┘
+       │
+       │ Database Query
+       ▼
+┌──────────────┐
+│   DATABASE   │
+└──────┬───────┘
+       │
+       │ Data
+       ▼
+┌──────────────┐
+│    SERVER    │
+└──────┬───────┘
+       │
+       │ HTTP Response
+       ▼
+┌──────────────┐
+│    CLIENT    │
+└──────────────┘
+```
+
+### 📦 Example
+
+Client sends:
+
+```http
+GET /api/products/
+```
+
+Server responds:
+
+```json
+[
+    {
+        "id": 1,
+        "name": "Laptop",
+        "price": 75000
+    }
+]
+```
+
+---
+
+# 🌍 3. REST Architecture Principles
+
+**REST** stands for:
+
+> **Representational State Transfer**
+
+REST is an architectural style used to design web APIs.
+
+A RESTful API organizes data as **resources**.
+
+For example:
+
+```text
+/users/
+/products/
+/orders/
+/customers/
+```
+
+Each resource can be accessed using HTTP methods.
+
+### 🧱 Main REST Principles
+
+### 1️⃣ Client-Server
+
+The client and server are separated.
+
+```text
+Client  ⇄  API  ⇄  Server
+```
+
+The frontend handles the user interface, while the backend handles data and business logic.
+
+---
+
+### 2️⃣ Stateless
+
+Each request should contain all the information required to process it.
+
+The server does not depend on previous requests to understand the current request.
+
+```text
+Request 1 → Server
+Request 2 → Server
+Request 3 → Server
+```
+
+Each request is treated independently.
+
+---
+
+### 3️⃣ Resource-Based
+
+REST APIs work with resources.
+
+Example:
+
+```text
+/users/
+/products/
+/orders/
+```
+
+A specific resource can be identified using an ID:
+
+```text
+/users/10
+/products/25
+/orders/100
+```
+
+---
+
+### 4️⃣ Uniform Interface
+
+REST APIs use a consistent way to access resources.
+
+Example:
+
+```http
+GET     /products/
+POST    /products/
+GET     /products/10
+PUT     /products/10
+DELETE  /products/10
+```
+
+---
+
+### 5️⃣ Representation
+
+Resources can be represented in different formats.
+
+The most common format for modern APIs is:
+
+```json
+{
+    "id": 10,
+    "name": "Laptop",
+    "price": 75000
+}
+```
+
+JSON is widely used because it is lightweight and easy for applications to process.
+
+---
+
+### 6️⃣ Cacheable
+
+Responses can sometimes be cached so that repeated requests can be served faster.
+
+```text
+Client
+  ↓
+Cache
+  ↓
+Server
+```
+
+Caching can reduce server load and improve performance.
+
+---
+
+# 🔄 4. Request-Response Lifecycle
+
+The **request-response lifecycle** describes what happens when a client communicates with a server.
+
+### 🔥 Flow
+
+```text
+Client
+   │
+   │ 1. Request
+   ▼
+API Endpoint
+   │
+   │ 2. URL Routing
+   ▼
+View / Controller
+   │
+   │ 3. Business Logic
+   ▼
+Database
+   │
+   │ 4. Data
+   ▼
+Serializer / Response
+   │
+   │ 5. HTTP Response
+   ▼
+Client
+```
+
+### 📝 Step-by-Step
+
+#### Step 1 — Client sends a request
+
+Example:
+
+```http
+GET /api/products/
+```
+
+#### Step 2 — Server receives the request
+
+The server identifies the requested URL and HTTP method.
+
+#### Step 3 — URL routing
+
+The request is matched with an appropriate API endpoint.
+
+Example:
+
+```text
+/api/products/
+        ↓
+Product View
+```
+
+#### Step 4 — Business logic
+
+The backend performs the required operation.
+
+For example:
+
+```text
+Fetch products
+Validate data
+Apply permissions
+Process business logic
+```
+
+#### Step 5 — Database interaction
+
+The backend may retrieve or modify data in the database.
+
+```text
+Django
+   ↓
+Django ORM
+   ↓
+Database
+```
+
+#### Step 6 — Response is created
+
+The server converts the result into a response, commonly JSON.
+
+```json
+{
+    "id": 1,
+    "name": "Laptop"
+}
+```
+
+#### Step 7 — Response is sent to the client
+
+```text
+Server
+   ↓
+HTTP Response
+   ↓
+Client
+```
+
+---
+
+# 🌐 5. HTTP Methods
+
+HTTP methods define **what action the client wants to perform** on a resource.
+
+| Method | Purpose | Example |
+|---|---|---|
+| `GET` | Retrieve data | `/products/` |
+| `POST` | Create new data | `/products/` |
+| `PUT` | Replace/update entire resource | `/products/10/` |
+| `PATCH` | Partially update resource | `/products/10/` |
+| `DELETE` | Delete data | `/products/10/` |
+
+---
+
+## 🟢 GET — Retrieve Data
+
+Used to retrieve existing data.
+
+```http
+GET /api/products/
+```
+
+Example response:
+
+```json
+[
+    {
+        "id": 1,
+        "name": "Laptop"
+    },
+    {
+        "id": 2,
+        "name": "Phone"
+    }
+]
+```
+
+### Example
+
+```text
+GET /api/products/
+        ↓
+Get all products
+```
+
+---
+
+## 🔵 POST — Create Data
+
+Used to create a new resource.
+
+```http
+POST /api/products/
+```
+
+Request body:
+
+```json
+{
+    "name": "Keyboard",
+    "price": 2500
+}
+```
+
+The server creates a new product.
+
+```text
+POST
+ ↓
+Create new product
+```
+
+---
+
+## 🟡 PUT — Update Entire Resource
+
+Used to **replace or completely update** a resource.
+
+```http
+PUT /api/products/10/
+```
+
+Request:
+
+```json
+{
+    "name": "Gaming Keyboard",
+    "price": 3000
+}
+```
+
+Conceptually:
+
+```text
+Existing Resource
+        ↓
+    PUT Request
+        ↓
+Replaced/Updated Resource
+```
+
+---
+
+## 🟠 PATCH — Partial Update
+
+Used when only some fields need to be updated.
+
+```http
+PATCH /api/products/10/
+```
+
+Request:
+
+```json
+{
+    "price": 2800
+}
+```
+
+Only the specified field is changed.
+
+```text
+Existing Product
+       ↓
+PATCH price
+       ↓
+Updated Product
+```
+
+### PUT vs PATCH
+
+```text
+PUT
+ ↓
+Complete replacement/update
+
+PATCH
+ ↓
+Partial update
+```
+
+---
+
+## 🔴 DELETE — Remove Data
+
+Used to delete a resource.
+
+```http
+DELETE /api/products/10/
+```
+
+Flow:
+
+```text
+DELETE /api/products/10/
+            ↓
+       Find Product
+            ↓
+          Delete
+            ↓
+       Send Response
+```
+
+---
+
+# 📊 CRUD + HTTP Methods
+
+The four basic database operations are called **CRUD**.
+
+| CRUD Operation | HTTP Method | Example |
+|---|---|---|
+| **Create** | `POST` | `/products/` |
+| **Read** | `GET` | `/products/` |
+| **Update** | `PUT / PATCH` | `/products/10/` |
+| **Delete** | `DELETE` | `/products/10/` |
+
+### 🔥 Easy Memory Trick
+
+```text
+C → POST
+R → GET
+U → PUT / PATCH
+D → DELETE
+```
+
+---
+
+# 🧩 Complete API Example
+
+Imagine we have a **Product API**.
+
+### Get all products
+
+```http
+GET /api/products/
+```
+
+### Get one product
+
+```http
+GET /api/products/1/
+```
+
+### Create product
+
+```http
+POST /api/products/
+```
+
+```json
+{
+    "name": "Mouse",
+    "price": 1500
+}
+```
+
+### Update product
+
+```http
+PUT /api/products/1/
+```
+
+### Partially update product
+
+```http
+PATCH /api/products/1/
+```
+
+```json
+{
+    "price": 1200
+}
+```
+
+### Delete product
+
+```http
+DELETE /api/products/1/
+```
+
+---
+
+# 🧠 Quick Revision
+
+```text
+API
+│
+├── Application Programming Interface
+│
+├── Client-Server Communication
+│     ├── Client → Request
+│     └── Server → Response
+│
+├── REST
+│     ├── Resource-based
+│     ├── Stateless
+│     ├── Client-Server
+│     ├── Uniform Interface
+│     └── Cacheable
+│
+├── Request-Response Lifecycle
+│     ├── Request
+│     ├── Routing
+│     ├── Processing
+│     ├── Database
+│     └── Response
+│
+└── HTTP Methods
+      ├── GET     → Read
+      ├── POST    → Create
+      ├── PUT     → Full Update
+      ├── PATCH   → Partial Update
+      └── DELETE  → Delete
+```
+
+---
+
+# 🎯 Key Takeaways
+
+> 🔹 **API** allows applications to communicate.
+
+> 🔹 **Client** sends the request.
+
+> 🔹 **Server** processes the request and returns a response.
+
+> 🔹 **REST** is an architectural style for designing APIs.
+
+> 🔹 **HTTP methods** define the operation being performed.
+
+> 🔹 **GET = Read**
+
+> 🔹 **POST = Create**
+
+> 🔹 **PUT = Full Update**
+
+> 🔹 **PATCH = Partial Update**
+
+> 🔹 **DELETE = Remove**
+
+---
+
+### 🚀 Next Step
+
+After understanding API fundamentals, the natural next topics are:
+
+```text
+API Fundamentals
+       ↓
+Django REST Framework
+       ↓
+DRF Project Structure
+       ↓
+Serializers
+       ↓
+Views / ViewSets
+       ↓
+URLs & Routers
+       ↓
+CRUD APIs
+       ↓
+Authentication & Permissions
+       ↓
+Validation & Error Handling
+       ↓
+Pagination / Filtering / Search
+       ↓
+Production-ready REST API
+```
