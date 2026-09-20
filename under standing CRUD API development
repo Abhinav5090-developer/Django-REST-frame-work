@@ -1,0 +1,305 @@
+# 🛠️ 5. Understand CRUD API Development
+
+CRUD stands for **Create, Read, Update, and Delete**. These are the four basic operations used to manage resources in an API. In Django REST Framework (DRF), CRUD APIs allow clients such as web applications, mobile applications, or other services to create, retrieve, modify, and delete data from a database.
+
+---
+
+## 📌 a. Creating Resources
+
+Creating a resource means adding a new record to the database.
+
+In REST APIs, the **HTTP POST** method is commonly used to create resources.
+
+### Example
+
+```http
+POST /api/products/
+```
+
+### Request Body
+
+```json
+{
+    "name": "Laptop",
+    "price": 75000,
+    "category": "Electronics"
+}
+```
+
+The API validates the input, creates a new database record, and returns the created resource.
+
+### Typical Flow
+
+```text
+Client
+   ↓
+POST Request
+   ↓
+API View
+   ↓
+Serializer Validation
+   ↓
+Model
+   ↓
+Database
+   ↓
+Response
+```
+
+---
+
+## 📥 b. Retrieving Resources
+
+Retrieving resources means reading or getting existing data from the database.
+
+The **HTTP GET** method is used to retrieve resources.
+
+### Retrieve all resources
+
+```http
+GET /api/products/
+```
+
+### Retrieve a single resource
+
+```http
+GET /api/products/1/
+```
+
+### Example Response
+
+```json
+{
+    "id": 1,
+    "name": "Laptop",
+    "price": 75000,
+    "category": "Electronics"
+}
+```
+
+GET requests normally do not modify database data.
+
+### Common Operations
+
+```text
+GET /api/products/      → Get all products
+GET /api/products/1/    → Get product with ID 1
+```
+
+---
+
+## ✏️ c. Updating Resources
+
+Updating a resource means modifying an existing record.
+
+REST APIs commonly use **PUT** and **PATCH** for updates.
+
+### PUT
+
+`PUT` is generally used when sending a complete replacement representation of a resource.
+
+```http
+PUT /api/products/1/
+```
+
+```json
+{
+    "name": "Gaming Laptop",
+    "price": 85000,
+    "category": "Electronics"
+}
+```
+
+### PATCH
+
+`PATCH` is generally used for partial updates.
+
+```http
+PATCH /api/products/1/
+```
+
+```json
+{
+    "price": 80000
+}
+```
+
+### Difference
+
+| Method | Purpose |
+|---|---|
+| PUT | Replace/update the complete resource |
+| PATCH | Update selected fields |
+
+---
+
+## 🗑️ d. Deleting Resources
+
+Deleting a resource means removing a record from the database.
+
+The **HTTP DELETE** method is used.
+
+### Example
+
+```http
+DELETE /api/products/1/
+```
+
+The API identifies the resource using its ID and removes it from the database.
+
+### Flow
+
+```text
+Client
+   ↓
+DELETE Request
+   ↓
+API View
+   ↓
+Find Resource
+   ↓
+Delete Resource
+   ↓
+Database Updated
+   ↓
+Response
+```
+
+A successful deletion commonly returns:
+
+```http
+204 No Content
+```
+
+---
+
+# 🔄 e. Building Complete CRUD Workflows
+
+A complete CRUD workflow combines all four operations into one API.
+
+For example, consider a **Product API**.
+
+### API Endpoints
+
+| Operation | HTTP Method | Endpoint | Purpose |
+|---|---|---|---|
+| Create | POST | `/api/products/` | Create a product |
+| Read | GET | `/api/products/` | Get all products |
+| Read | GET | `/api/products/1/` | Get one product |
+| Update | PUT | `/api/products/1/` | Replace a product |
+| Update | PATCH | `/api/products/1/` | Partially update a product |
+| Delete | DELETE | `/api/products/1/` | Delete a product |
+
+### Complete CRUD Flow
+
+```text
+              Product API
+                   │
+       ┌───────────┼───────────┐
+       ↓           ↓           ↓
+     Create       Read       Update
+     POST         GET       PUT/PATCH
+       │           │           │
+       └───────────┼───────────┘
+                   ↓
+                Delete
+                 DELETE
+```
+
+---
+
+## 🧩 CRUD with Django REST Framework
+
+A typical DRF CRUD workflow contains:
+
+```text
+Model
+  ↓
+Serializer
+  ↓
+View / ViewSet
+  ↓
+URL / Router
+  ↓
+API Endpoint
+  ↓
+Client
+```
+
+### Model
+
+The model defines the structure of the database table.
+
+```python
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+```
+
+### Serializer
+
+The serializer converts model instances into JSON and validates incoming data.
+
+```python
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = "__all__"
+```
+
+### ViewSet
+
+A `ModelViewSet` can provide standard CRUD operations.
+
+```python
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+
+### Router
+
+A router can automatically generate API URL patterns.
+
+```python
+router.register("products", ProductViewSet)
+```
+
+This can provide endpoints such as:
+
+```text
+GET     /products/
+POST    /products/
+GET     /products/1/
+PUT     /products/1/
+PATCH   /products/1/
+DELETE  /products/1/
+```
+
+---
+
+## 🎯 Key Points
+
+- **CRUD** stands for Create, Read, Update, and Delete.
+- **POST** is commonly used to create resources.
+- **GET** is used to retrieve resources.
+- **PUT** is generally used to replace a resource.
+- **PATCH** is used for partial updates.
+- **DELETE** is used to remove resources.
+- Serializers handle **validation and data transformation**.
+- Views or ViewSets handle **API operations**.
+- Routers can automatically create URL patterns for ViewSets.
+- CRUD APIs provide the basic operations required to manage database resources.
+
+---
+
+## 🚀 CRUD Summary
+
+```text
+CREATE  → POST
+READ    → GET
+UPDATE  → PUT / PATCH
+DELETE  → DELETE
+```
+
+**CRUD APIs form the foundation of most RESTful backend applications.**
