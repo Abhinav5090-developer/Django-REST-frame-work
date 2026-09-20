@@ -1,0 +1,342 @@
+# 🔗 6. Understand URL Routing & API Structure
+
+URL routing is the process of connecting an API URL to the appropriate view or ViewSet. In Django REST Framework, proper URL structure makes APIs easier to understand, maintain, and scale.
+
+---
+
+## 📌 a. URL Patterns
+
+URL patterns define which URL should be connected to which view.
+
+In Django, URL patterns are commonly defined using `path()` or `re_path()`.
+
+### Example
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("products/", views.product_list),
+    path("products/<int:id>/", views.product_detail),
+]
+```
+
+### Example URLs
+
+```text
+GET /products/
+GET /products/1/
+```
+
+The `<int:id>` part captures the ID from the URL and passes it to the view.
+
+### URL Pattern Structure
+
+```text
+URL
+ ↓
+URL Pattern
+ ↓
+View
+ ↓
+Response
+```
+
+---
+
+## 📦 b. Routers
+
+Routers in Django REST Framework automatically generate URL patterns for **ViewSets**.
+
+Instead of manually defining every CRUD URL, a router can create them automatically.
+
+### Example
+
+```python
+from rest_framework.routers import DefaultRouter
+from .views import ProductViewSet
+
+router = DefaultRouter()
+
+router.register("products", ProductViewSet)
+
+urlpatterns = router.urls
+```
+
+A router can generate endpoints such as:
+
+```text
+GET     /products/
+POST    /products/
+GET     /products/1/
+PUT     /products/1/
+PATCH   /products/1/
+DELETE  /products/1/
+```
+
+### Why Use Routers?
+
+- Reduces repetitive URL configuration
+- Works well with ViewSets
+- Automatically generates standard CRUD routes
+- Keeps API URL configuration organized
+
+---
+
+## 🗂️ c. Endpoint Organization
+
+An **endpoint** is a specific URL through which a client interacts with an API.
+
+A well-organized API uses consistent URL structures.
+
+### Example
+
+```text
+/api/products/
+/api/products/1/
+/api/users/
+/api/users/1/
+/api/orders/
+/api/orders/1/
+```
+
+Each resource has its own endpoint.
+
+### Recommended Structure
+
+```text
+/api/
+├── products/
+├── users/
+├── orders/
+└── categories/
+```
+
+For nested resources, URLs can represent relationships.
+
+```text
+/api/users/1/orders/
+```
+
+This can represent orders belonging to user `1`.
+
+### Good Endpoint Organization
+
+```text
+/api/products/
+/api/products/10/
+/api/products/10/reviews/
+/api/categories/
+/api/users/
+```
+
+Use consistent naming and avoid unnecessary actions in URLs.
+
+---
+
+## 🧱 d. Resource-Based API Design
+
+REST APIs are generally organized around **resources**.
+
+A resource represents an entity or collection of data, such as:
+
+```text
+Users
+Products
+Orders
+Articles
+Categories
+```
+
+The URL identifies the resource, while the HTTP method defines the operation.
+
+### Example
+
+```text
+GET     /api/products/
+POST    /api/products/
+GET     /api/products/5/
+PUT     /api/products/5/
+PATCH   /api/products/5/
+DELETE  /api/products/5/
+```
+
+Here:
+
+```text
+/products/      → Product collection
+/products/5/    → Product with ID 5
+```
+
+### Avoid Action-Based URLs
+
+Instead of designing URLs like:
+
+```text
+/api/getProducts/
+/api/createProduct/
+/api/deleteProduct/5/
+```
+
+Prefer resource-based URLs:
+
+```text
+/api/products/
+/api/products/5/
+```
+
+Then use HTTP methods to specify the operation.
+
+```text
+GET     → Retrieve
+POST    → Create
+PUT     → Replace
+PATCH   → Partially update
+DELETE  → Delete
+```
+
+---
+
+## 🔢 e. API Versioning Awareness
+
+API versioning allows different versions of an API to exist when breaking changes are introduced.
+
+For example:
+
+```text
+/api/v1/products/
+/api/v2/products/
+```
+
+### Version 1
+
+```text
+GET /api/v1/products/
+```
+
+### Version 2
+
+```text
+GET /api/v2/products/
+```
+
+Different versions can support different response formats, fields, or behaviors.
+
+### Why API Versioning Matters
+
+API versioning helps:
+
+- Maintain backward compatibility
+- Introduce breaking changes safely
+- Give clients time to migrate
+- Support older applications
+- Manage long-term API evolution
+
+### Common Versioning Approaches
+
+#### URL Versioning
+
+```text
+/api/v1/products/
+/api/v2/products/
+```
+
+#### Query Parameter Versioning
+
+```text
+/api/products/?version=1
+```
+
+#### Header Versioning
+
+```http
+Accept: application/json; version=1
+```
+
+The exact versioning strategy depends on the API architecture and project requirements.
+
+---
+
+# 🔄 Complete API Structure
+
+A typical Django REST Framework API can be organized like this:
+
+```text
+Client
+   │
+   ↓
+API URL
+   │
+   ↓
+URL Pattern / Router
+   │
+   ↓
+View / ViewSet
+   │
+   ↓
+Serializer
+   │
+   ↓
+Model / ORM
+   │
+   ↓
+Database
+```
+
+### Example Project Structure
+
+```text
+project/
+│
+├── project/
+│   ├── urls.py
+│   └── settings.py
+│
+└── products/
+    ├── models.py
+    ├── serializers.py
+    ├── views.py
+    └── urls.py
+```
+
+---
+
+# 🎯 Key Points
+
+- **URL patterns** connect URLs to views.
+- **Routers** automatically generate URLs for DRF ViewSets.
+- **Endpoints** should be organized consistently around resources.
+- **Resource-based design** uses nouns such as `/products/` rather than action-based URLs.
+- HTTP methods define what operation is performed on a resource.
+- **API versioning** allows APIs to evolve while maintaining compatibility with existing clients.
+- Common versioning styles include URL, query parameter, and header versioning.
+
+---
+
+## 🚀 Quick Summary
+
+```text
+URL Patterns
+    ↓
+Connect URLs → Views
+
+Routers
+    ↓
+Automatically generate ViewSet URLs
+
+Endpoint Organization
+    ↓
+Keep API URLs consistent and structured
+
+Resource-Based Design
+    ↓
+Use /products/ instead of /getProducts/
+
+API Versioning
+    ↓
+/api/v1/
+/api/v2/
+```
+
+**A well-structured URL design makes an API predictable, maintainable, and easier for clients to consume.**
