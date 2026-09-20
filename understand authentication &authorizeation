@@ -1,0 +1,467 @@
+# 🔐 7. Understand Authentication & Authorization
+
+Authentication and authorization are important security concepts in API development. They control **who can access an API** and **what that user is allowed to do**.
+
+---
+
+## 📌 a. Authentication Concepts
+
+**Authentication** is the process of verifying the identity of a user or client.
+
+It answers:
+
+> **"Who are you?"**
+
+For example, when a user logs into an application using a username and password, the server verifies those credentials.
+
+### Basic Authentication Flow
+
+```text
+Client
+   ↓
+Username + Password
+   ↓
+Server
+   ↓
+Verify Credentials
+   ↓
+Authentication Successful
+   ↓
+Access Granted
+```
+
+### Example
+
+```text
+Username: abhinav
+Password: ********
+```
+
+If the credentials are valid, the server authenticates the user.
+
+### Authentication vs Authorization
+
+| Concept | Meaning |
+|---|---|
+| Authentication | Verifies who the user is |
+| Authorization | Determines what the user can access |
+
+### Simple Example
+
+```text
+Authentication:
+"Is this user Abhinav?"
+
+Authorization:
+"Is Abhinav allowed to delete this product?"
+```
+
+---
+
+## 🍪 b. Session Authentication
+
+**Session authentication** uses a server-side session to remember that a user has logged in.
+
+After successful login, the server creates a session and sends a session identifier to the client, commonly through a cookie.
+
+### Flow
+
+```text
+Client
+   ↓
+Login Credentials
+   ↓
+Server
+   ↓
+Verify User
+   ↓
+Create Session
+   ↓
+Session Cookie
+   ↓
+Client
+```
+
+For later requests:
+
+```text
+Client
+   ↓
+Session Cookie
+   ↓
+Server
+   ↓
+Find Session
+   ↓
+Identify User
+   ↓
+Allow Request
+```
+
+### Example
+
+```http
+POST /login/
+```
+
+After login, the browser may receive a session cookie.
+
+The browser automatically sends that cookie with subsequent requests.
+
+### Advantages
+
+- Easy to use with browser-based applications
+- Server can invalidate sessions
+- Works well with Django's built-in authentication system
+
+### Limitation
+
+The server needs to maintain session state.
+
+---
+
+## 🔑 c. Token Authentication
+
+**Token authentication** uses a token to identify an authenticated client.
+
+After login, the server provides a token.
+
+```text
+Client
+   ↓
+Login
+   ↓
+Server
+   ↓
+Generate Token
+   ↓
+Token
+   ↓
+Client
+```
+
+The client then sends the token with future API requests.
+
+### Example
+
+```http
+Authorization: Token abc123xyz
+```
+
+The server uses the token to identify the user.
+
+### Flow
+
+```text
+Login
+  ↓
+Token Generated
+  ↓
+Client Stores Token
+  ↓
+Client Sends Token
+  ↓
+Server Validates Token
+  ↓
+Request Processed
+```
+
+Token authentication is commonly used for APIs where clients may include mobile apps, frontend applications, or other services.
+
+---
+
+## 🪪 d. JWT Authentication Fundamentals
+
+**JWT** stands for **JSON Web Token**.
+
+JWT is a token format commonly used for authentication between clients and servers.
+
+A JWT consists of three parts:
+
+```text
+Header.Payload.Signature
+```
+
+### Structure
+
+```text
+Header
+   .
+Payload
+   .
+Signature
+```
+
+### 1. Header
+
+The header contains information about the token type and signing algorithm.
+
+Example:
+
+```json
+{
+    "alg": "HS256",
+    "typ": "JWT"
+}
+```
+
+### 2. Payload
+
+The payload contains claims about the user or token.
+
+Example:
+
+```json
+{
+    "user_id": 10,
+    "username": "abhinav"
+}
+```
+
+Do not put sensitive information such as passwords in the payload. JWT payloads are normally encoded, not encrypted.
+
+### 3. Signature
+
+The signature is used to verify that the token has not been modified.
+
+Conceptually:
+
+```text
+Signature =
+Hash(
+    Header + Payload + Secret
+)
+```
+
+### JWT Authentication Flow
+
+```text
+Client
+   ↓
+Login Credentials
+   ↓
+Server
+   ↓
+Verify Credentials
+   ↓
+Generate JWT
+   ↓
+Access Token
+   ↓
+Client
+```
+
+For an API request:
+
+```http
+GET /api/products/
+Authorization: Bearer <access_token>
+```
+
+The server verifies the token before processing the request.
+
+### Access Token
+
+An access token is used to access protected API resources.
+
+```http
+Authorization: Bearer eyJhbGciOi...
+```
+
+### Refresh Token
+
+Some JWT-based systems also use a refresh token to obtain a new access token after the access token expires.
+
+```text
+Refresh Token
+      ↓
+Authentication Server
+      ↓
+New Access Token
+```
+
+---
+
+# 🛡️ e. Permissions and Access Control
+
+**Authorization** determines what an authenticated user is allowed to do.
+
+It answers:
+
+> **"What are you allowed to access?"**
+
+For example:
+
+```text
+Admin
+ ├── Create
+ ├── Read
+ ├── Update
+ └── Delete
+
+Regular User
+ ├── Read
+ └── Update own profile
+```
+
+### Permissions in Django REST Framework
+
+DRF provides permission classes to control access to API views.
+
+Example:
+
+```python
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
+class ProductView(APIView):
+    permission_classes = [IsAuthenticated]
+```
+
+Now only authenticated users can access the view.
+
+### Common Permission Concepts
+
+```text
+AllowAny
+    ↓
+Anyone can access
+
+IsAuthenticated
+    ↓
+Only authenticated users
+
+IsAdminUser
+    ↓
+Only admin/staff users
+
+Custom Permission
+    ↓
+Application-specific rules
+```
+
+### Example
+
+```python
+from rest_framework.permissions import IsAuthenticated
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+Users must authenticate before accessing the API.
+
+---
+
+# 🔄 Authentication + Authorization Flow
+
+A protected API generally follows this process:
+
+```text
+              Client
+                │
+                ↓
+          Login Request
+                │
+                ↓
+          Authentication
+                │
+                ↓
+       Token / Session Created
+                │
+                ↓
+        API Request + Credential
+                │
+                ↓
+       Authentication Check
+                │
+                ↓
+        Permission Check
+                │
+          ┌─────┴─────┐
+          ↓           ↓
+       Allowed      Denied
+          │           │
+          ↓           ↓
+       Response     401/403
+```
+
+### HTTP Status Codes
+
+| Status | Meaning |
+|---|---|
+| `200 OK` | Request successful |
+| `201 Created` | Resource created |
+| `401 Unauthorized` | Authentication is missing or invalid |
+| `403 Forbidden` | Authentication may be valid, but access is not permitted |
+
+---
+
+# 🧠 Authentication vs Authorization
+
+```text
+Authentication
+      ↓
+"Who are you?"
+      ↓
+Identity Verification
+```
+
+```text
+Authorization
+      ↓
+"What can you do?"
+      ↓
+Permission Control
+```
+
+### Example
+
+```text
+User logs in
+      ↓
+Authentication
+      ↓
+User identified as Admin
+      ↓
+Authorization
+      ↓
+Admin can delete products
+```
+
+---
+
+# 🎯 Key Points
+
+- **Authentication** verifies the identity of a user.
+- **Authorization** controls what an authenticated user can access.
+- **Session authentication** stores authentication state on the server and commonly uses cookies.
+- **Token authentication** identifies clients using tokens.
+- **JWT** is a token format commonly used for stateless authentication.
+- JWT consists of **Header, Payload, and Signature**.
+- Never store passwords or other sensitive secrets in a JWT payload.
+- **Permissions** control access to API resources and operations.
+- DRF provides built-in permission classes such as `AllowAny`, `IsAuthenticated`, and `IsAdminUser`.
+- `401` generally indicates an authentication problem, while `403` indicates that access is not permitted.
+
+---
+
+## 🚀 Quick Summary
+
+```text
+Authentication
+      ↓
+Verify Identity
+      ↓
+Session / Token / JWT
+      ↓
+Authorization
+      ↓
+Check Permissions
+      ↓
+Access API Resource
+```
+
+**Authentication identifies the client; authorization determines what that client is allowed to do.**
