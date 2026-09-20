@@ -1,0 +1,598 @@
+# 🔐 11. Understand API Security Fundamentals
+
+API security is the practice of protecting APIs from unauthorized access, malicious requests, data exposure, and other security threats. A secure API verifies users, controls permissions, validates input, protects sensitive information, and follows secure development practices.
+
+---
+
+## 📌 a. Authentication Security
+
+Authentication security ensures that only legitimate users or clients can access protected API resources.
+
+Common authentication mechanisms include:
+
+```text
+Session Authentication
+Token Authentication
+JWT Authentication
+OAuth 2.0
+```
+
+### Secure Authentication Practices
+
+#### Use Strong Password Policies
+
+Passwords should not be stored as plain text.
+
+```text
+❌ password123
+```
+
+Passwords should be securely hashed using appropriate password-hashing mechanisms.
+
+```text
+Password
+   ↓
+Hashing
+   ↓
+Stored Password Hash
+```
+
+#### Use HTTPS
+
+API communication should use **HTTPS** to encrypt data transmitted between the client and server.
+
+```text
+HTTP   → Unencrypted communication
+HTTPS  → Encrypted communication
+```
+
+For example:
+
+```text
+https://example.com/api/products/
+```
+
+instead of:
+
+```text
+http://example.com/api/products/
+```
+
+#### Protect Authentication Tokens
+
+Authentication tokens should be handled carefully.
+
+Avoid exposing tokens in:
+
+```text
+URLs
+Public source code
+Git repositories
+Logs
+Screenshots
+```
+
+---
+
+## 🛡️ b. Authorization Security
+
+Authorization determines what an authenticated user is allowed to do.
+
+Authentication asks:
+
+```text
+"Who are you?"
+```
+
+Authorization asks:
+
+```text
+"What are you allowed to access?"
+```
+
+### Example
+
+Suppose an application has:
+
+```text
+Admin
+User
+```
+
+The API might allow:
+
+```text
+Admin
+ ├── Create products
+ ├── Update products
+ ├── Delete products
+ └── View products
+
+User
+ └── View products
+```
+
+### Object-Level Authorization
+
+Authorization should also verify whether the user is allowed to access a **specific object**.
+
+For example:
+
+```text
+User A → /api/orders/10/
+```
+
+The API should not assume that being authenticated means User A can access every order.
+
+The server should verify:
+
+```text
+Is User A allowed to access Order 10?
+```
+
+This is important for preventing unauthorized data access.
+
+---
+
+## 🔎 c. Input Validation Security
+
+Input validation ensures that data received from clients is safe and follows the application's expected rules.
+
+Never assume that client input is trustworthy.
+
+### Example
+
+A client sends:
+
+```json
+{
+    "price": -5000
+}
+```
+
+The server should validate the value before processing it.
+
+```text
+Client Input
+     ↓
+Validation
+     ↓
+Valid? ── No ──→ Reject Request
+     │
+    Yes
+     ↓
+Process Data
+```
+
+### Validate
+
+Common validation checks include:
+
+```text
+Required fields
+Data types
+String length
+Number ranges
+Allowed values
+Email format
+File types
+File sizes
+```
+
+### Serializer Validation
+
+DRF serializers can be used to validate incoming API data.
+
+```python
+def validate_price(self, value):
+    if value <= 0:
+        raise serializers.ValidationError(
+            "Price must be greater than 0."
+        )
+    return value
+```
+
+Server-side validation should always be performed even if the frontend also validates the data.
+
+---
+
+# ⚠️ d. Common API Security Risks
+
+APIs can be exposed to many different security problems.
+
+## 1. Broken Authentication
+
+Poor authentication implementation can allow attackers to access accounts or protected resources.
+
+Examples:
+
+```text
+Weak passwords
+Poor token handling
+Missing authentication checks
+Improper session management
+```
+
+---
+
+## 2. Broken Authorization
+
+An API may correctly identify a user but fail to check whether that user is allowed to access a particular resource.
+
+Example:
+
+```text
+User A
+   ↓
+GET /api/users/25/
+   ↓
+API returns User B's private information
+```
+
+Proper authorization checks should prevent this.
+
+---
+
+## 3. Injection Attacks
+
+Injection occurs when untrusted input is interpreted as commands or queries.
+
+Examples include:
+
+```text
+SQL Injection
+Command Injection
+```
+
+Using Django's ORM and parameterized database operations helps reduce SQL injection risks.
+
+Avoid constructing SQL queries by directly concatenating untrusted input.
+
+---
+
+## 4. Excessive Data Exposure
+
+An API may accidentally return more information than the client actually needs.
+
+For example:
+
+```json
+{
+    "id": 1,
+    "name": "Abhinav",
+    "email": "example@email.com",
+    "password_hash": "...",
+    "internal_notes": "..."
+}
+```
+
+Sensitive internal information should not be exposed through API responses.
+
+Serializers should expose only the fields that clients actually need.
+
+---
+
+## 5. Lack of Rate Limiting
+
+An API without appropriate rate limits can be abused through excessive requests.
+
+```text
+Client
+  ↓
+Request
+Request
+Request
+Request
+Request
+...
+```
+
+Rate limiting can restrict how frequently a client can make requests.
+
+---
+
+## 6. Sensitive Data Exposure
+
+Sensitive information can accidentally appear in:
+
+```text
+API responses
+Logs
+Error messages
+URLs
+Source code
+Git repositories
+```
+
+Sensitive data should be protected throughout its entire lifecycle.
+
+---
+
+## 7. Security Misconfiguration
+
+Examples include:
+
+```text
+Debug mode enabled in production
+Weak secret keys
+Incorrect CORS configuration
+Unnecessary API endpoints
+Improper permissions
+Exposed administrative interfaces
+```
+
+Production configuration should be reviewed carefully before deployment.
+
+---
+
+## 🚨 e. Secure API Development Practices
+
+Secure API development should be considered throughout the entire development lifecycle.
+
+### 1. Use HTTPS
+
+Encrypt API communication using TLS.
+
+```text
+Client
+  ⇅
+HTTPS
+  ⇅
+API Server
+```
+
+---
+
+### 2. Authenticate Protected Endpoints
+
+Do not leave sensitive endpoints publicly accessible unless there is a deliberate reason.
+
+```python
+permission_classes = [IsAuthenticated]
+```
+
+---
+
+### 3. Implement Proper Authorization
+
+Check both:
+
+```text
+User identity
++
+Resource permissions
+```
+
+Do not rely only on authentication.
+
+---
+
+### 4. Validate All Input
+
+Validate data on the server.
+
+```text
+Input
+ ↓
+Serializer Validation
+ ↓
+Business Rules
+ ↓
+Database
+```
+
+---
+
+### 5. Protect Secrets
+
+Do not hard-code:
+
+```text
+Passwords
+Secret keys
+API keys
+Database credentials
+Private tokens
+```
+
+Use environment variables or an appropriate secrets-management mechanism.
+
+---
+
+### 6. Use Secure Error Responses
+
+Avoid returning sensitive implementation details.
+
+Avoid responses such as:
+
+```text
+Database password: XXXXX
+Internal file path: C:\server\project\...
+```
+
+Prefer a controlled response:
+
+```json
+{
+    "detail": "An internal server error occurred."
+}
+```
+
+Detailed errors can be logged securely on the server while exposing only appropriate information to clients.
+
+---
+
+### 7. Apply Rate Limiting
+
+Rate limiting can help reduce abuse and excessive requests.
+
+Conceptually:
+
+```text
+Client
+   ↓
+Rate Limit Check
+   ↓
+Allowed? ── No ──→ 429 Too Many Requests
+   │
+  Yes
+   ↓
+API
+```
+
+---
+
+### 8. Keep Dependencies Updated
+
+Third-party packages can contain security vulnerabilities.
+
+Regularly review and update dependencies where appropriate.
+
+```text
+Django
+Django REST Framework
+Database Drivers
+Authentication Libraries
+Other Packages
+```
+
+---
+
+### 9. Use Least Privilege
+
+Give users and services only the permissions they actually need.
+
+```text
+User
+ ↓
+Required Permissions Only
+```
+
+Avoid giving every user administrative privileges.
+
+---
+
+### 10. Avoid Sensitive Information in URLs
+
+Avoid putting credentials or sensitive tokens in URLs:
+
+```text
+❌ /api/login/?password=secret123
+```
+
+Use secure request mechanisms such as HTTPS and appropriate request headers/body fields.
+
+---
+
+# 🔄 Secure API Request Flow
+
+A protected API request can follow this process:
+
+```text
+                  Client
+                    ↓
+               HTTPS Request
+                    ↓
+              Authentication
+                    ↓
+              Authorization
+                    ↓
+             Input Validation
+                    ↓
+              Business Logic
+                    ↓
+             Database / Service
+                    ↓
+             Secure Response
+                    ↓
+                  Client
+```
+
+At every stage, the API should enforce the appropriate security controls.
+
+---
+
+# 🧩 Django REST Framework Security Example
+
+A protected ViewSet might look like:
+
+```python
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+This ensures that authentication is required before accessing the ViewSet.
+
+Additional authorization rules can be implemented using custom permission classes.
+
+---
+
+# 🎯 Security Checklist
+
+Before deploying an API, review:
+
+```text
+☑ HTTPS enabled
+☑ Authentication implemented
+☑ Authorization implemented
+☑ Object-level permissions checked
+☑ Input validation enabled
+☑ Sensitive fields excluded from responses
+☑ Secrets stored securely
+☑ Rate limiting considered
+☑ Error messages controlled
+☑ Dependencies maintained
+☑ Production configuration reviewed
+☑ Debug mode disabled in production
+☑ Database access secured
+☑ Logging does not expose sensitive data
+```
+
+---
+
+# 🧠 Key Points
+
+- **Authentication security** protects user identity and credentials.
+- **Authorization security** controls access to resources and actions.
+- **Input validation** prevents invalid or unexpected data from being processed.
+- APIs should not trust data received from clients.
+- Common risks include broken authentication, broken authorization, injection, excessive data exposure, rate-limit issues, and security misconfiguration.
+- HTTPS protects data during transmission.
+- Sensitive information should never be unnecessarily exposed through API responses, URLs, logs, or source code.
+- Environment variables or secrets-management systems should be used for sensitive configuration.
+- Rate limiting can help control excessive API requests.
+- Least-privilege access reduces the impact of compromised accounts or services.
+- Security should be considered throughout API design, development, testing, and deployment.
+
+---
+
+## 🚀 Quick Summary
+
+```text
+Authentication
+      ↓
+Verify Identity
+
+Authorization
+      ↓
+Check Permissions
+
+Input Validation
+      ↓
+Verify Client Data
+
+Security Controls
+      ↓
+HTTPS + Rate Limiting + Secure Configuration
+
+Secure API
+      ↓
+Protected Data + Controlled Access
+```
+
+**API security is a combination of authentication, authorization, validation, secure configuration, controlled data exposure, and defensive development practices.**
